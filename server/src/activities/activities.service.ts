@@ -16,7 +16,7 @@ export class ActivitiesService {
     });
 
     if (!assignedUser) {
-      throw new NotFoundException('Assigned user not found');
+      throw new NotFoundException('Assigned user not found!');
     }
 
     if (createActivityDto.companyId) {

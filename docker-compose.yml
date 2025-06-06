@@ -1,0 +1,53 @@
+name: mpc-crm
+
+services:
+  db:
+    image: postgres
+    ports:
+      - 5439:5432
+    environment:
+      POSTGRES_USER: cagri
+      POSTGRES_PASSWORD: 123123
+      POSTGRES_DB: multitenant_db
+    volumes:
+      - postgres_db:/data/db
+    networks:
+      - crm
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./server/.env
+    command: sh -c "npx prisma generate && npm run start:dev"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    ports:
+      - 3001:3001
+    depends_on:
+      - db
+    networks:
+      - crm
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    networks:
+      - crm
+    ports:
+      - 5173:5173
+    depends_on:
+      - api
+
+volumes:
+  postgres_db:
+
+networks:
+  crm:
+    driver: bridge
