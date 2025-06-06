@@ -26,7 +26,95 @@ Multi-tenancy is common in SaaS products like CRM systems, email platforms, and 
 
 ---
 
+## Approaches to Multi-Tenancy
+
+There are several **approaches to implementing multi-tenancy**, each with its own trade-offs in terms of isolation, complexity, and resource usage. Here are the most common approaches:
+
+---
+
+## 1. Shared Database, Shared Schema (This basic application uses this approach)
+
+- **Description:**  
+  All tenants share the same database and the same set of tables. Tenant data is distinguished by a tenant identifier column in each table.
+
+- **Pros:**  
+  - Easiest to manage and scale.
+  - Cost-effective (minimal resource usage).
+  - Simple to onboard new tenants.
+
+- **Cons:**  
+  - Lowest level of data isolation.
+  - More complex queries (must always filter by tenant ID).
+  - Harder to customize for individual tenants.
+
+---
+
+## 2. Shared Database, Separate Schemas
+
+- **Description:**  
+  All tenants share the same database, but each tenant has its own schema (set of tables).
+
+- **Pros:**  
+  - Better data isolation than shared schema.
+  - Easier to customize per tenant.
+  - Still efficient in terms of resource usage.
+
+- **Cons:**  
+  - More complex to manage (especially as the number of tenants grows).
+  - Schema updates must be applied to all schemas.
+
+---
+
+## 3. Separate Databases
+
+- **Description:**  
+  Each tenant has its own database instance.
+
+- **Pros:**  
+  - Strongest data isolation.
+  - Easy to backup, restore, or migrate individual tenants.
+  - Customization is straightforward.
+
+- **Cons:**  
+  - Higher resource usage and operational overhead.
+  - More expensive to scale.
+  - More complex to manage many databases.
+
+---
+
+## 4. Hybrid Approaches
+
+- **Description:**  
+  Some systems use a combination of the above, such as grouping tenants by region or size, and assigning each group to a separate database or schema.
+
+- **Pros:**  
+  - Balances isolation, cost, and manageability.
+  - Can optimize for specific business or technical needs.
+
+- **Cons:**  
+  - Increased architectural complexity.
+  - Requires careful planning and automation.
+
+---
+
+## Summary Table
+
+| Approach                        | Isolation Level | Customization | Complexity | Cost      |
+|----------------------------------|----------------|---------------|------------|-----------|
+| Shared DB, Shared Schema         | Low            | Low           | Low        | Low       |
+| Shared DB, Separate Schemas      | Medium         | Medium        | Medium     | Medium    |
+| Separate Databases               | High           | High          | High       | High      |
+| Hybrid                           | Variable       | Variable      | High       | Variable  |
+
+---
+
+**Choosing the right approach** depends on your application's requirements for security, scalability, customization, and cost. Many SaaS providers start with a shared schema and evolve to more isolated models as they grow.
+
+---
+
 **In summary**, multi-tenancy is a foundational concept in modern cloud applications, enabling efficient, scalable, and cost-effective service delivery to multiple customers from a single platform.
+
+---
 
 A full-stack multi-tenant CRM application built with **NestJS** (backend), **React + Vite** (frontend), **Prisma ORM**, and **PostgreSQL**. The project is containerized using Docker Compose for easy local development.
 
