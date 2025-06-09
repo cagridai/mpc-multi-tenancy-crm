@@ -22,7 +22,9 @@
     "test:companies": "NODE_ENV=test jest companies.e2e-spec.ts",
     "test:contacts": "NODE_ENV=test jest contacts.e2e-spec.ts",
     "test:deals": "NODE_ENV=test jest deals.e2e-spec.ts",
-    "seed": "DATABASE_URL=postgresql://cagri:123123@localhost:5439/multitenant_db tsx prisma/seed.ts"
+    "seed": "DATABASE_URL=postgresql://cagri:123123@localhost:5439/multitenant_db tsx prisma/seed.ts",
+    "prisma:studio": "DATABASE_URL=postgresql://cagri:123123@localhost:5439/multitenant_db npx prisma studio",
+    "prisma:db": "DATABASE_URL=postgresql://cagri:123123@localhost:5439/multitenant_db npx prisma db push"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -31,6 +33,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.0",
     "@prisma/client": "^6.9.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -45,6 +48,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^9.8.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.1.2",

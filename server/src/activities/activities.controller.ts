@@ -17,13 +17,23 @@ import {
   UpdateActivityDto,
 } from './dto/activity.dto';
 import { TenantId } from 'src/common/decorators/teanat.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('activities')
+@ApiBearerAuth()
 @Controller('activities')
 @UseGuards(AuthGuard('jwt'))
 export class ActivitiesController {
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a new activity' })
+  @ApiResponse({ status: 201, description: 'Activity created' })
   create(
     @Body() createActivityDto: CreateActivityDto,
     @TenantId() tenantId: string,
@@ -32,6 +42,7 @@ export class ActivitiesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all activities' })
   findAll(@Query() query: ActivityQueryDto, @TenantId() tenantId: string) {
     return this.activitiesService.findAll(query, tenantId);
   }
