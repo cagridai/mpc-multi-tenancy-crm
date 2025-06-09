@@ -9,6 +9,7 @@ interface DealsState {
   pipelines: any[];
   isLoading: boolean;
   page: number;
+  total: number;
   totalPages: number;
   fetchDeals: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
@@ -25,6 +26,7 @@ export const useDealsStore = create<DealsState>((set, get) => ({
   isLoading: false,
   page: 1,
   totalPages: 0,
+  total: 0,
 
   fetchDeals: async (page = get().page) => {
     set({ isLoading: true });
@@ -46,7 +48,10 @@ export const useDealsStore = create<DealsState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await dealsAPI.getStats();
-      set({ stats: response.data, isLoading: false });
+      set({
+        stats: response.data,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

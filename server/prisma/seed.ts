@@ -15,15 +15,15 @@ const prisma = new PrismaClient();
 
 // 🎛️ CONFIGURATION - Modify these numbers as needed
 const SEED_CONFIG = {
-  tenants: 5,
+  tenants: 10,
   perTenant: {
     users: 15, // Total users per tenant (1 admin + others)
     managers: 3, // Number of managers (included in users count)
-    companies: 100, // Companies per tenant
-    contactsPerCompany: 3, // Contacts per company
-    deals: 50, // Deals per tenant
-    activitiesPerDeal: 2, // Activities per deal
-    notesPerCompany: 2, // Notes per company
+    companies: 1000, // Companies per tenant
+    contactsPerCompany: 30, // Contacts per company
+    deals: 500, // Deals per tenant
+    activitiesPerDeal: 200, // Activities per deal
+    notesPerCompany: 21, // Notes per company
     notesPerContact: 1, // Notes per contact
     notesPerDeal: 1, // Notes per deal
   },

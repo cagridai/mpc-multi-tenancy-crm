@@ -32,6 +32,7 @@ export const useCompaniesStore = create<CompaniesState>((set, get) => ({
         companies: response.data.data,
         page: response.data.meta.page,
         totalPages: response.data.meta.totalPages,
+        total: response.data.meta.total,
         isLoading: false,
       });
     } catch (error) {
@@ -44,7 +45,10 @@ export const useCompaniesStore = create<CompaniesState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await companiesAPI.getStats();
-      set({ stats: response.data, isLoading: false });
+      set({
+        stats: response.data,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

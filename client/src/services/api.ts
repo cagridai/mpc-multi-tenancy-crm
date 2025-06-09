@@ -107,7 +107,8 @@ export const activitiesAPI = {
     api.patch<Activity>(`/activities/${id}`, data),
   delete: (id: string) => api.delete(`/activities/${id}`),
   getStats: () => api.get<Stats>("/activities/stats"),
-  getUpcoming: () => api.get<ApiResponse<Activity>>("/activities/upcoming"),
+  getUpcoming: (page: number = 1) =>
+    api.get<ApiResponse<Activity>>(`/activities/upcoming?page=${page}`),
 };
 
 // Notes API

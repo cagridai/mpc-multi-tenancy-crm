@@ -7,6 +7,7 @@ interface ContactsState {
   stats: Stats | null;
   isLoading: boolean;
   page: number;
+  total: number;
   totalPages: number;
   fetchContacts: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
@@ -21,6 +22,7 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
   isLoading: false,
   page: 1,
   totalPages: 0,
+  total: 0,
 
   fetchContacts: async (page = get().page) => {
     set({ isLoading: true });
@@ -42,7 +44,10 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await contactsAPI.getStats();
-      set({ stats: response.data, isLoading: false });
+      set({
+        stats: response.data,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

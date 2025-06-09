@@ -7,10 +7,21 @@ interface ActivitiesState {
   upcomingActivities: Activity[];
   stats: Stats | null;
   isLoading: boolean;
+  isLoadingUpcoming: boolean;
+  isLoadingStats: boolean;
+
+  // Pagination for all activities
   page: number;
+  total: number;
   totalPages: number;
+
+  // Separate pagination for upcoming activities
+  upcomingPage: number;
+  upcomingTotal: number;
+  upcomingTotalPages: number;
+
   fetchActivities: (page?: number) => Promise<void>;
-  fetchUpcoming: () => Promise<void>;
+  fetchUpcoming: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   createActivity: (data: Partial<Activity>) => Promise<void>;
   updateActivity: (id: string, data: Partial<Activity>) => Promise<void>;
@@ -22,8 +33,18 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
   upcomingActivities: [],
   stats: null,
   isLoading: false,
+  isLoadingUpcoming: false,
+  isLoadingStats: false,
+
+  // Pagination for all activities
   page: 1,
   totalPages: 0,
+  total: 0,
+
+  // Separate pagination for upcoming activities
+  upcomingPage: 1,
+  upcomingTotalPages: 0,
+  upcomingTotal: 0,
 
   fetchActivities: async (page = get().page) => {
     set({ isLoading: true });
@@ -33,6 +54,7 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
         activities: response.data.data,
         page: response.data.meta.page,
         totalPages: response.data.meta.totalPages,
+        total: response.data.meta.total,
         isLoading: false,
       });
     } catch (error) {
@@ -41,24 +63,37 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     }
   },
 
-  fetchUpcoming: async () => {
-    set({ isLoading: true });
+  fetchUpcoming: async (page = 1) => {
+    set({ isLoadingUpcoming: true });
     try {
-      const response = await activitiesAPI.getUpcoming();
-      set({ upcomingActivities: response.data.data, isLoading: false });
+      const response = await activitiesAPI.getUpcoming(page);
+
+      set({
+        upcomingActivities: response.data.data || response.data,
+        upcomingPage: response.data.meta?.page || page,
+        upcomingTotalPages: response.data.meta?.totalPages || 1,
+        upcomingTotal: response.data.meta?.total || response.data.length,
+        isLoadingUpcoming: false,
+      });
     } catch (error) {
-      set({ isLoading: false });
+      set({
+        upcomingActivities: [],
+        isLoadingUpcoming: false,
+      });
       throw error;
     }
   },
 
   fetchStats: async () => {
-    set({ isLoading: true });
+    set({ isLoadingStats: true });
     try {
       const response = await activitiesAPI.getStats();
-      set({ stats: response.data, isLoading: false });
+      set({
+        stats: response.data,
+        isLoadingStats: false,
+      });
     } catch (error) {
-      set({ isLoading: false });
+      set({ isLoadingStats: false });
       throw error;
     }
   },
@@ -67,7 +102,8 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     set({ isLoading: true });
     try {
       await activitiesAPI.create(data);
-      await get().fetchActivities();
+      // Refresh both activities and upcoming activities
+      await Promise.all([get().fetchActivities(), get().fetchUpcoming()]);
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -78,7 +114,8 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     set({ isLoading: true });
     try {
       await activitiesAPI.update(id, data);
-      await get().fetchActivities();
+      // Refresh both activities and upcoming activities
+      await Promise.all([get().fetchActivities(), get().fetchUpcoming()]);
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -89,7 +126,8 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     set({ isLoading: true });
     try {
       await activitiesAPI.delete(id);
-      await get().fetchActivities();
+      // Refresh both activities and upcoming activities
+      await Promise.all([get().fetchActivities(), get().fetchUpcoming()]);
     } catch (error) {
       set({ isLoading: false });
       throw error;

@@ -1,89 +1,107 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  companiesAPI,
-  contactsAPI,
-  dealsAPI,
-  activitiesAPI,
-} from "@/services/api";
 import { Building2, Users, Handshake, Activity } from "lucide-react";
+import { Button } from "./ui/button";
+import { useCompaniesStore } from "@/stores/companies";
+import { useContactsStore } from "@/stores/contacts";
+import { useDealsStore } from "@/stores/deals";
+import { useActivitiesStore } from "@/stores/activities";
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({
-    companies: 0,
-    contacts: 0,
-    deals: 0,
-    activities: 0,
-  });
-  const [upcomingActivities, setUpcomingActivities] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Get stats and loading states from stores
+  const {
+    stats: companiesStats,
+    fetchStats: fetchCompaniesStats,
+    isLoading: companiesLoading,
+  } = useCompaniesStore();
 
+  const {
+    stats: contactsStats,
+    fetchStats: fetchContactsStats,
+    isLoading: contactsLoading,
+  } = useContactsStore();
+
+  const {
+    stats: dealsStats,
+    fetchStats: fetchDealsStats,
+    isLoading: dealsLoading,
+  } = useDealsStore();
+
+  const {
+    stats: activitiesStats,
+    upcomingActivities,
+    upcomingPage,
+    upcomingTotalPages,
+    fetchStats: fetchActivitiesStats,
+    fetchUpcoming,
+    isLoadingStats: activitiesStatsLoading,
+    isLoadingUpcoming: upcomingLoading,
+  } = useActivitiesStore();
+
+  // Fetch stats on mount
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const loadDashboardData = async () => {
       try {
-        const [
-          companiesRes,
-          contactsRes,
-          dealsRes,
-          activitiesRes,
-          upcomingRes,
-        ] = await Promise.all([
-          companiesAPI.getStats(),
-          contactsAPI.getStats(),
-          dealsAPI.getStats(),
-          activitiesAPI.getStats(),
-          activitiesAPI.getUpcoming(),
+        console.log("Loading dashboard data...");
+        await Promise.all([
+          fetchCompaniesStats(),
+          fetchContactsStats(),
+          fetchDealsStats(),
+          fetchActivitiesStats(),
+          fetchUpcoming(1),
         ]);
-
-        setStats({
-          companies: companiesRes.data.total || 0,
-          contacts: contactsRes.data.total || 0,
-          deals: dealsRes.data.total || 0,
-          activities: activitiesRes.data.total || 0,
-        });
-
-        setUpcomingActivities(upcomingRes.data.data || []);
+        console.log("Dashboard data loaded successfully");
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to load dashboard data:", error);
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    loadDashboardData();
+  }, [
+    fetchCompaniesStats,
+    fetchContactsStats,
+    fetchDealsStats,
+    fetchActivitiesStats,
+    fetchUpcoming,
+  ]);
+
+  // Extract totals from stats objects
+  const companiesTotal = companiesStats?.total ?? 0;
+  const contactsTotal = contactsStats?.total ?? 0;
+  const dealsTotal = dealsStats?.total ?? 0;
+  const activitiesTotal = activitiesStats?.total ?? 0;
 
   const statCards = [
     {
       title: "Companies",
-      value: stats.companies,
+      value: companiesTotal,
       icon: Building2,
       color: "text-blue-600",
+      loading: companiesLoading,
     },
     {
       title: "Contacts",
-      value: stats.contacts,
+      value: contactsTotal,
       icon: Users,
       color: "text-green-600",
+      loading: contactsLoading,
     },
     {
       title: "Deals",
-      value: stats.deals,
+      value: dealsTotal,
       icon: Handshake,
       color: "text-purple-600",
+      loading: dealsLoading,
     },
     {
       title: "Activities",
-      value: stats.activities,
+      value: activitiesTotal,
       icon: Activity,
       color: "text-orange-600",
+      loading: activitiesStatsLoading,
     },
   ];
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -102,7 +120,11 @@ const Dashboard = () => {
                       {stat.title}
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {stat.value}
+                      {stat.loading ? (
+                        <span className="animate-pulse">...</span>
+                      ) : (
+                        stat.value.toLocaleString()
+                      )}
                     </p>
                   </div>
                   <Icon className={`h-8 w-8 ${stat.color}`} />
@@ -119,30 +141,68 @@ const Dashboard = () => {
           <CardTitle>Upcoming Activities</CardTitle>
         </CardHeader>
         <CardContent>
-          {upcomingActivities.length > 0 ? (
+          {upcomingLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <span className="ml-2">Loading upcoming activities...</span>
+            </div>
+          ) : upcomingActivities && upcomingActivities.length > 0 ? (
             <div className="space-y-4">
-              {upcomingActivities.slice(0, 5).map((activity: any) => (
+              {upcomingActivities.map((activity: any) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-medium text-gray-900">
                       {activity.title}
                     </h4>
-                    <p className="text-sm text-gray-600">
-                      {activity.description}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(activity.dueDate).toLocaleDateString()}
-                    </p>
+                    {activity.description && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {activity.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2">
+                      {activity.dueDate && (
+                        <p className="text-xs text-gray-500">
+                          Due:{" "}
+                          {new Date(activity.dueDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </p>
+                      )}
+                      {activity.assignedTo && (
+                        <p className="text-xs text-gray-500">
+                          Assigned to: {activity.assignedTo.firstName}{" "}
+                          {activity.assignedTo.lastName}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <Badge variant="outline">{activity.type}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{activity.type}</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {activity.status?.replace("_", " ") || "PLANNED"}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">No upcoming activities</p>
+            <div className="text-center py-8">
+              <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No upcoming activities</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Activities will appear here when you create them
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
