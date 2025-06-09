@@ -22,14 +22,20 @@ const ContactsPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  const { contacts, isLoading, fetchContacts, deleteContact } =
-    useContactsStore();
+  const {
+    contacts,
+    isLoading,
+    page,
+    totalPages,
+    fetchContacts,
+    deleteContact,
+  } = useContactsStore();
   const { fetchCompanies } = useCompaniesStore();
 
   useEffect(() => {
-    fetchContacts();
+    fetchContacts(page);
     fetchCompanies(); // For company selection in dialog
-  }, [fetchContacts, fetchCompanies]);
+  }, [fetchContacts, fetchCompanies, page]);
 
   const filteredContacts = contacts.filter(
     (contact) =>
@@ -56,6 +62,16 @@ const ContactsPage = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedContact(null);
+  };
+
+  const handlePrevPage = () => {
+    const asd = parseInt(page);
+    if (page > 1) fetchContacts(asd - 1);
+  };
+
+  const handleNextPage = () => {
+    const asd = parseInt(page);
+    if (page < totalPages) fetchContacts(asd + 1);
   };
 
   const getStatusColor = (status: string) => {
@@ -97,57 +113,82 @@ const ContactsPage = () => {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredContacts.map((contact) => (
-                  <TableRow key={contact.id}>
-                    <TableCell className="font-medium">
-                      {contact.firstName} {contact.lastName}
-                    </TableCell>
-                    <TableCell>{contact.email || "-"}</TableCell>
-                    <TableCell>{contact.phone || "-"}</TableCell>
-                    <TableCell>{contact.position || "-"}</TableCell>
-                    <TableCell>{contact.company?.name || "-"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getStatusColor(contact.status || "ACTIVE")}
-                      >
-                        {contact.status || "ACTIVE"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(contact)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(contact.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Position</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredContacts.map((contact) => (
+                    <TableRow key={contact.id}>
+                      <TableCell className="font-medium">
+                        {contact.firstName} {contact.lastName}
+                      </TableCell>
+                      <TableCell>{contact.email || "-"}</TableCell>
+                      <TableCell>{contact.phone || "-"}</TableCell>
+                      <TableCell>{contact.position || "-"}</TableCell>
+                      <TableCell>{contact.company?.name || "-"}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStatusColor(contact.status || "ACTIVE")}
+                        >
+                          {contact.status || "ACTIVE"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(contact)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(contact.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {totalPages !== 1 && (
+                <div className="flex justify-end items-center mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

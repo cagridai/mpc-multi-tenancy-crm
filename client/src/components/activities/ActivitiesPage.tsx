@@ -26,18 +26,24 @@ const ActivitiesPage = () => {
     null
   );
 
-  const { activities, isLoading, fetchActivities, deleteActivity } =
-    useActivitiesStore();
+  const {
+    activities,
+    isLoading,
+    page,
+    totalPages,
+    fetchActivities,
+    deleteActivity,
+  } = useActivitiesStore();
   const { fetchCompanies } = useCompaniesStore();
   const { fetchContacts } = useContactsStore();
   const { fetchDeals } = useDealsStore();
 
   useEffect(() => {
-    fetchActivities();
+    fetchActivities(page);
     fetchCompanies();
     fetchContacts();
     fetchDeals();
-  }, [fetchActivities, fetchCompanies, fetchContacts, fetchDeals]);
+  }, [page, fetchActivities, fetchCompanies, fetchContacts, fetchDeals]);
 
   const filteredActivities = activities.filter((activity) =>
     activity.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -61,6 +67,16 @@ const ActivitiesPage = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedActivity(null);
+  };
+
+  const handlePrevPage = () => {
+    const asd = parseInt(page);
+    if (page > 1) fetchActivities(asd - 1);
+  };
+
+  const handleNextPage = () => {
+    const asd = parseInt(page);
+    if (page < totalPages) fetchActivities(asd + 1);
   };
 
   const getTypeColor = (type: string) => {
@@ -121,71 +137,98 @@ const ActivitiesPage = () => {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Deal</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredActivities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">
-                      {activity.title}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getTypeColor(activity.type)}>
-                        {activity.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getStatusColor(activity.status || "PLANNED")}
-                      >
-                        {activity.status || "PLANNED"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {activity.dueDate
-                        ? new Date(activity.dueDate).toLocaleDateString()
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{activity.company?.name || "-"}</TableCell>
-                    <TableCell>
-                      {activity.contact
-                        ? `${activity.contact.firstName} ${activity.contact.lastName}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{activity.deal?.title || "-"}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(activity)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(activity.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Deal</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredActivities.map((activity) => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">
+                        {activity.title}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getTypeColor(activity.type)}>
+                          {activity.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStatusColor(
+                            activity.status || "PLANNED"
+                          )}
+                        >
+                          {activity.status || "PLANNED"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {activity.dueDate
+                          ? new Date(activity.dueDate).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{activity.company?.name || "-"}</TableCell>
+                      <TableCell>
+                        {activity.contact
+                          ? `${activity.contact.firstName} ${activity.contact.lastName}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{activity.deal?.title || "-"}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(activity)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(activity.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {totalPages !== 1 && (
+                <div className="flex justify-end items-center mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

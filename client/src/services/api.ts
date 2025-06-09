@@ -62,7 +62,8 @@ export const authAPI = {
 
 // Companies API
 export const companiesAPI = {
-  getAll: () => api.get<ApiResponse<Company>>("/companies"),
+  getAll: (page: number = 1) =>
+    api.get<ApiResponse<Company>>(`/companies?page=${page}`),
   getById: (id: string) => api.get<Company>(`/companies/${id}`),
   create: (data: Partial<Company>) => api.post<Company>("/companies", data),
   update: (id: string, data: Partial<Company>) =>
@@ -73,7 +74,8 @@ export const companiesAPI = {
 
 // Contacts API
 export const contactsAPI = {
-  getAll: () => api.get<ApiResponse<Contact>>("/contacts"),
+  getAll: (page: number = 1) =>
+    api.get<ApiResponse<Contact>>(`/contacts?page=${page}`),
   getById: (id: string) => api.get<Contact>(`/contacts/${id}`),
   create: (data: Partial<Contact>) => api.post<Contact>("/contacts", data),
   update: (id: string, data: Partial<Contact>) =>
@@ -84,7 +86,8 @@ export const contactsAPI = {
 
 // Deals API
 export const dealsAPI = {
-  getAll: () => api.get<ApiResponse<Deal>>("/deals"),
+  getAll: (page: number = 1) =>
+    api.get<ApiResponse<Deal>>(`/deals?page=${page}`),
   getById: (id: string) => api.get<Deal>(`/deals/${id}`),
   create: (data: Partial<Deal>) => api.post<Deal>("/deals", data),
   update: (id: string, data: Partial<Deal>) =>
@@ -96,7 +99,8 @@ export const dealsAPI = {
 
 // Activities API
 export const activitiesAPI = {
-  getAll: () => api.get<ApiResponse<Activity>>("/activities"),
+  getAll: (page: number = 1) =>
+    api.get<ApiResponse<Activity>>(`/activities?page=${page}`),
   getById: (id: string) => api.get<Activity>(`/activities/${id}`),
   create: (data: Partial<Activity>) => api.post<Activity>("/activities", data),
   update: (id: string, data: Partial<Activity>) =>
@@ -108,7 +112,8 @@ export const activitiesAPI = {
 
 // Notes API
 export const notesAPI = {
-  getAll: () => api.get<ApiResponse<Note>>("/notes"),
+  getAll: (page: number = 1) =>
+    api.get<ApiResponse<Note>>(`/notes?page=${page}`),
   getById: (id: string) => api.get<Note>(`/notes/${id}`),
   create: (data: Partial<Note>) => api.post<Note>("/notes", data),
   update: (id: string, data: Partial<Note>) =>

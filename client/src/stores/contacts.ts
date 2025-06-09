@@ -6,7 +6,9 @@ interface ContactsState {
   contacts: Contact[];
   stats: Stats | null;
   isLoading: boolean;
-  fetchContacts: () => Promise<void>;
+  page: number;
+  totalPages: number;
+  fetchContacts: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   createContact: (data: Partial<Contact>) => Promise<void>;
   updateContact: (id: string, data: Partial<Contact>) => Promise<void>;
@@ -17,12 +19,19 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
   contacts: [],
   stats: null,
   isLoading: false,
+  page: 1,
+  totalPages: 0,
 
-  fetchContacts: async () => {
+  fetchContacts: async (page = get().page) => {
     set({ isLoading: true });
     try {
-      const response = await contactsAPI.getAll();
-      set({ contacts: response.data.data, isLoading: false });
+      const response = await contactsAPI.getAll(page);
+      set({
+        contacts: response.data.data,
+        page: response.data.meta.page,
+        totalPages: response.data.meta.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

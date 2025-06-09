@@ -6,7 +6,10 @@ interface CompaniesState {
   companies: Company[];
   stats: Stats | null;
   isLoading: boolean;
-  fetchCompanies: () => Promise<void>;
+  page: number;
+  total: number;
+  totalPages: number;
+  fetchCompanies: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   createCompany: (data: Partial<Company>) => Promise<void>;
   updateCompany: (id: string, data: Partial<Company>) => Promise<void>;
@@ -17,12 +20,20 @@ export const useCompaniesStore = create<CompaniesState>((set, get) => ({
   companies: [],
   stats: null,
   isLoading: false,
+  page: 1,
+  total: 0,
+  totalPages: 0,
 
-  fetchCompanies: async () => {
+  fetchCompanies: async (page = get().page) => {
     set({ isLoading: true });
     try {
-      const response = await companiesAPI.getAll();
-      set({ companies: response.data.data, isLoading: false });
+      const response = await companiesAPI.getAll(page);
+      set({
+        companies: response.data.data,
+        page: response.data.meta.page,
+        totalPages: response.data.meta.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

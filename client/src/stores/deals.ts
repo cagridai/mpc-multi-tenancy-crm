@@ -8,7 +8,9 @@ interface DealsState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pipelines: any[];
   isLoading: boolean;
-  fetchDeals: () => Promise<void>;
+  page: number;
+  totalPages: number;
+  fetchDeals: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   fetchPipelines: () => Promise<void>;
   createDeal: (data: Partial<Deal>) => Promise<void>;
@@ -21,12 +23,19 @@ export const useDealsStore = create<DealsState>((set, get) => ({
   stats: null,
   pipelines: [],
   isLoading: false,
+  page: 1,
+  totalPages: 0,
 
-  fetchDeals: async () => {
+  fetchDeals: async (page = get().page) => {
     set({ isLoading: true });
     try {
-      const response = await dealsAPI.getAll();
-      set({ deals: response.data.data, isLoading: false });
+      const response = await dealsAPI.getAll(page);
+      set({
+        deals: response.data.data,
+        page: response.data.meta.page,
+        totalPages: response.data.meta.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

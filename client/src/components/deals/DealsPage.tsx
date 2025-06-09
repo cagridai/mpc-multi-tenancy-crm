@@ -23,15 +23,16 @@ const DealsPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
-  const { deals, isLoading, fetchDeals, deleteDeal } = useDealsStore();
+  const { deals, isLoading, page, totalPages, fetchDeals, deleteDeal } =
+    useDealsStore();
   const { fetchCompanies } = useCompaniesStore();
   const { fetchContacts } = useContactsStore();
 
   useEffect(() => {
-    fetchDeals();
+    fetchDeals(page);
     fetchCompanies();
     fetchContacts();
-  }, [fetchDeals, fetchCompanies, fetchContacts]);
+  }, [fetchDeals, fetchCompanies, fetchContacts, page]);
 
   const filteredDeals = deals.filter((deal) =>
     deal.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -55,6 +56,16 @@ const DealsPage = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedDeal(null);
+  };
+
+  const handlePrevPage = () => {
+    const asd = parseInt(page);
+    if (page > 1) fetchDeals(asd - 1);
+  };
+
+  const handleNextPage = () => {
+    const asd = parseInt(page);
+    if (page < totalPages) fetchDeals(asd + 1);
   };
 
   const getStageColor = (stage: string) => {
@@ -115,71 +126,100 @@ const DealsPage = () => {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Probability</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Close Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDeals.map((deal) => (
-                  <TableRow key={deal.id}>
-                    <TableCell className="font-medium">{deal.title}</TableCell>
-                    <TableCell>
-                      {deal.value
-                        ? `${
-                            deal.currency || "$"
-                          }${deal.value.toLocaleString()}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getStageColor(deal.stage || "PROSPECTING")}
-                      >
-                        {deal.stage || "PROSPECTING"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(deal.status || "OPEN")}>
-                        {deal.status || "OPEN"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{deal.probability || 0}%</TableCell>
-                    <TableCell>{deal.company?.name || "-"}</TableCell>
-                    <TableCell>
-                      {deal.closeDate
-                        ? new Date(deal.closeDate).toLocaleDateString()
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(deal)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(deal.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Stage</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Probability</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Close Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredDeals.map((deal) => (
+                    <TableRow key={deal.id}>
+                      <TableCell className="font-medium">
+                        {deal.title}
+                      </TableCell>
+                      <TableCell>
+                        {deal.value
+                          ? `${
+                              deal.currency || "$"
+                            }${deal.value.toLocaleString()}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStageColor(deal.stage || "PROSPECTING")}
+                        >
+                          {deal.stage || "PROSPECTING"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStatusColor(deal.status || "OPEN")}
+                        >
+                          {deal.status || "OPEN"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{deal.probability || 0}%</TableCell>
+                      <TableCell>{deal.company?.name || "-"}</TableCell>
+                      <TableCell>
+                        {deal.closeDate
+                          ? new Date(deal.closeDate).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(deal)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(deal.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {totalPages !== 1 && (
+                <div className="flex justify-end items-center mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

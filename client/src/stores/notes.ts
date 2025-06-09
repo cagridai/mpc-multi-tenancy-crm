@@ -6,7 +6,9 @@ interface NotesState {
   notes: Note[];
   stats: Stats | null;
   isLoading: boolean;
-  fetchNotes: () => Promise<void>;
+  page: number;
+  totalPages: number;
+  fetchNotes: (page?: number) => Promise<void>;
   fetchStats: () => Promise<void>;
   createNote: (data: Partial<Note>) => Promise<void>;
   updateNote: (id: string, data: Partial<Note>) => Promise<void>;
@@ -17,12 +19,19 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   notes: [],
   stats: null,
   isLoading: false,
+  page: 1,
+  totalPages: 0,
 
-  fetchNotes: async () => {
+  fetchNotes: async (page = get().page) => {
     set({ isLoading: true });
     try {
-      const response = await notesAPI.getAll();
-      set({ notes: response.data.data, isLoading: false });
+      const response = await notesAPI.getAll(page);
+      set({
+        notes: response.data.data,
+        page: response.data.meta.page,
+        totalPages: response.data.meta.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;

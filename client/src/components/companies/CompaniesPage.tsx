@@ -21,12 +21,18 @@ const CompaniesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
-  const { companies, isLoading, fetchCompanies, deleteCompany } =
-    useCompaniesStore();
+  const {
+    companies,
+    page,
+    totalPages,
+    isLoading,
+    fetchCompanies,
+    deleteCompany,
+  } = useCompaniesStore();
 
   useEffect(() => {
-    fetchCompanies();
-  }, [fetchCompanies]);
+    fetchCompanies(page);
+  }, [fetchCompanies, page]);
 
   const filteredCompanies = companies.filter((company) =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,6 +56,16 @@ const CompaniesPage = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedCompany(null);
+  };
+
+  const handlePrevPage = () => {
+    const asd = parseInt(page);
+    if (page > 1) fetchCompanies(asd - 1);
+  };
+
+  const handleNextPage = () => {
+    const asd = parseInt(page);
+    if (page < totalPages) fetchCompanies(asd + 1);
   };
 
   const getStatusColor = (status: string) => {
@@ -91,55 +107,80 @@ const CompaniesPage = () => {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Industry</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCompanies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell className="font-medium">
-                      {company.name}
-                    </TableCell>
-                    <TableCell>{company.industry || "-"}</TableCell>
-                    <TableCell>{company.size || "-"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getStatusColor(company.status || "ACTIVE")}
-                      >
-                        {company.status || "ACTIVE"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{company.email || "-"}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(company)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(company.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Industry</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredCompanies.map((company) => (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">
+                        {company.name}
+                      </TableCell>
+                      <TableCell>{company.industry || "-"}</TableCell>
+                      <TableCell>{company.size || "-"}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStatusColor(company.status || "ACTIVE")}
+                        >
+                          {company.status || "ACTIVE"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{company.email || "-"}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(company)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(company.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {totalPages !== 1 && (
+                <div className="flex justify-end items-center mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

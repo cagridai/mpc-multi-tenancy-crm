@@ -7,7 +7,9 @@ interface ActivitiesState {
   upcomingActivities: Activity[];
   stats: Stats | null;
   isLoading: boolean;
-  fetchActivities: () => Promise<void>;
+  page: number;
+  totalPages: number;
+  fetchActivities: (page?: number) => Promise<void>;
   fetchUpcoming: () => Promise<void>;
   fetchStats: () => Promise<void>;
   createActivity: (data: Partial<Activity>) => Promise<void>;
@@ -20,12 +22,19 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
   upcomingActivities: [],
   stats: null,
   isLoading: false,
+  page: 1,
+  totalPages: 0,
 
-  fetchActivities: async () => {
+  fetchActivities: async (page = get().page) => {
     set({ isLoading: true });
     try {
-      const response = await activitiesAPI.getAll();
-      set({ activities: response.data.data, isLoading: false });
+      const response = await activitiesAPI.getAll(page);
+      set({
+        activities: response.data.data,
+        page: response.data.meta.page,
+        totalPages: response.data.meta.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -35,7 +44,7 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
   fetchUpcoming: async () => {
     set({ isLoading: true });
     try {
-      const response = await activitiesAPI.getUpcomming();
+      const response = await activitiesAPI.getUpcoming();
       set({ upcomingActivities: response.data.data, isLoading: false });
     } catch (error) {
       set({ isLoading: false });

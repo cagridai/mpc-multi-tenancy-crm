@@ -23,17 +23,18 @@ const NotesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
-  const { notes, isLoading, fetchNotes, deleteNote } = useNotesStore();
+  const { notes, isLoading, page, totalPages, fetchNotes, deleteNote } =
+    useNotesStore();
   const { fetchCompanies } = useCompaniesStore();
   const { fetchContacts } = useContactsStore();
   const { fetchDeals } = useDealsStore();
 
   useEffect(() => {
-    fetchNotes();
+    fetchNotes(page);
     fetchCompanies();
     fetchContacts();
     fetchDeals();
-  }, [fetchNotes, fetchCompanies, fetchContacts, fetchDeals]);
+  }, [fetchNotes, fetchCompanies, fetchContacts, fetchDeals, page]);
 
   const filteredNotes = notes.filter((note) =>
     note.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -59,11 +60,15 @@ const NotesPage = () => {
     setSelectedNote(null);
   };
 
-  // const truncateContent = (content: string, maxLength: number = 100) => {
-  //   return content.length > maxLength
-  //     ? content.substring(0, maxLength) + "..."
-  //     : content;
-  // };
+  const handlePrevPage = () => {
+    const asd = parseInt(page);
+    if (page > 1) fetchNotes(asd - 1);
+  };
+
+  const handleNextPage = () => {
+    const asd = parseInt(page);
+    if (page < totalPages) fetchNotes(asd + 1);
+  };
 
   return (
     <div className="space-y-6">
@@ -91,55 +96,80 @@ const NotesPage = () => {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Content</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Deal</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredNotes.map((note) => (
-                  <TableRow key={note.id}>
-                    <TableCell className="font-medium max-w-xs whitespace-pre-line break-words">
-                      {note.content}
-                    </TableCell>
-                    <TableCell>{note.company?.name || "-"}</TableCell>
-                    <TableCell>
-                      {note.contact
-                        ? `${note.contact.firstName} ${note.contact.lastName}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{note.deal?.title || "-"}</TableCell>
-                    <TableCell>
-                      {new Date(note.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(note)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(note.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Content</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Deal</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredNotes.map((note) => (
+                    <TableRow key={note.id}>
+                      <TableCell className="font-medium max-w-xs whitespace-pre-line break-words">
+                        {note.content}
+                      </TableCell>
+                      <TableCell>{note.company?.name || "-"}</TableCell>
+                      <TableCell>
+                        {note.contact
+                          ? `${note.contact.firstName} ${note.contact.lastName}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{note.deal?.title || "-"}</TableCell>
+                      <TableCell>
+                        {new Date(note.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(note)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(note.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {totalPages !== 1 && (
+                <div className="flex justify-end items-center mt-4 space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
