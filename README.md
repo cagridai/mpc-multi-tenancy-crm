@@ -175,6 +175,13 @@ docker-compose up --build
 
 ---
 
+## Seeding The Database
+After docker compose up
+```sh
+cd server
+npm run seed
+```
+
 ## Development
 
 - **Frontend:**  
